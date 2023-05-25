@@ -1,3 +1,4 @@
+// This sender will keep sending with adress 0x01 and command 0x10
 /*
  * SimpleSender.cpp
  * Demonstrates sending IR codes in standard format with address and command

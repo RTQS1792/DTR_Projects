@@ -26,7 +26,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         break
                     if data:
                         print("Data: ", len(data), data[0])
-            time.sleep(1)
+            time.sleep(0.5)
     except:
         print("Closing connection")
         conn.close()
