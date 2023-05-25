@@ -62,10 +62,10 @@ We do not need this for now.
 */
 
 /*
-Description: This function excute
+Description: This function executes when setup is finished and keeps sending message
 */
 void loop() {
-  // Keeps searching for connectui
+  // Keeps searching for connecting
   if (!client.connect(host, httpPort)) {
     Serial.printf("\n No connection");
     delay(1000);

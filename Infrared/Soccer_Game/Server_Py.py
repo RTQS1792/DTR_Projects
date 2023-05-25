@@ -21,8 +21,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print("Waiting for data...")
                 while True:       
                     data = conn.recv(1)
+                    # Make sure the buffer is empty before reading
                     if not data:
-                        print("No data")
                         break
                     if data:
                         print("Data: ", len(data), data[0])
