@@ -26,23 +26,16 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             with conn: 
                 print("Waiting for data...")
                 while True:
-                    Flag += 1
-                    if Flag >= 3:
-                        command = 'CMD_MOTOR#1100#1100#-1100#-1100\n'
-                        cars.send(command.encode('utf-8'))
-                        time.sleep(0.2)
-                        command = 'CMD_MOTOR#00#00#00#00\n'
-                        cars.send(command.encode('utf-8'))       
-                    print("Where is the data?")
                     data = conn.recv(1)
                     # Make sure the buffer is empty before reading
                     if not data:
                         print("No data")                                
                         break
                     if data:
-                        Flag = 0
                         print("Data: ", len(data), data[0])
+                        Flag += 1
                         if data[0] == 49:
+                            Flag = 0
                             print("Forward")
                             command = 'CMD_MOTOR#1500#1500#1500#1500\n'
                             cars.send(command.encode('utf-8'))
@@ -50,18 +43,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                             command = 'CMD_MOTOR#00#00#00#00\n'
                             cars.send(command.encode('utf-8'))
                         elif data[0] == 48:
+                            print("Inrange")
                             command = 'CMD_MOTOR#1100#1100#-1100#-1100\n'
                             cars.send(command.encode('utf-8'))
                             time.sleep(0.1)
                             command = 'CMD_MOTOR#00#00#00#00\n'
                             cars.send(command.encode('utf-8'))
-                        else:
+                        elif data[0] == 50 and Flag >= 3:
+                            print("Searching")
                             command = 'CMD_MOTOR#1100#1100#-1100#-1100\n'
                             cars.send(command.encode('utf-8'))
                             time.sleep(0.2)
                             command = 'CMD_MOTOR#00#00#00#00\n'
                             cars.send(command.encode('utf-8'))
-            time.sleep(0.5)
+            time.sleep(0.3)
     except:
         command = 'CMD_MOTOR#00#00#00#00\n'
         cars.send(command.encode('utf-8'))

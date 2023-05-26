@@ -122,12 +122,17 @@ void loop() {
     if (IrReceiver.decodedIRData.command == 0x10 && IrReceiver.decodedIRData.address == 0x01) {
         client.write("1");
         client.flush();
-        delay(100);
+        delay(300);
     } else{
       Serial.printf("\n Noise");
       client.write("0");
       client.flush();
-      delay(100);
+      delay(300);
     }
+  }else{
+    Serial.printf("\n No data");
+    client.write("2");
+    client.flush();
+    delay(300);
   }
 }
