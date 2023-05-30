@@ -9,7 +9,7 @@
  * If no protocol is defined, all protocols (except Bang&Olufsen) are active.
  * This must be done before the #include <IRremote.hpp>
  */
- 
+
 
 #define DECODE_NEC  // Includes Apple and Onkyo
 #include <Arduino.h>
@@ -18,10 +18,10 @@
 
 // WIFI ----------------------------------------------------
 #include <WiFi.h>
-const char* ssid = "AIRLab-BigLab"; // Wifi name
-const char* password = "Airlabrocks2022"; // Wifi Password
-const char* host = "192.168.0.41";  // Host IP
-const int httpPort = 80;            // Port
+const char* ssid = "AIRLab-BigLab";        // Wifi name
+const char* password = "Airlabrocks2022";  // Wifi Password
+const char* host = "192.168.0.41";         // Host IP
+const int httpPort = 80;                   // Port
 WiFiClient client;
 // END WIFI ------------------------------------------------
 
@@ -32,8 +32,7 @@ void setup() {
   Serial.println(F("START " __FILE__ " from " __DATE__ "\r\nUsing library version " VERSION_IRREMOTE));
 
   // For ESP32 the IR_Reveiver pin is defined in the PinDefinitionsAndMore.h to be 15
-  IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK);
-  IrReceiver.begin(2, ENABLE_LED_FEEDBACK)
+  IrReceiver.begin(15, ENABLE_LED_FEEDBACK);
 
   Serial.print(F("Ready to receive IR signals of protocols: "));
   printActiveIRProtocols(&Serial);
@@ -59,18 +58,10 @@ void setup() {
 }
 
 void loop() {
-  /*
-     * Check if received data is available and if yes, try to decode it.
-     * Decoded result is in the IrReceiver.decodedIRData structure.
-     *
-     * E.g. command is in IrReceiver.decodedIRData.command
-     * address is in command is in IrReceiver.decodedIRData.address
-     * and up to 32 bit raw data in IrReceiver.decodedIRData.decodedRawData
-     */
+  IrReceiver.setReceivePin(15);
+  delay(100);
   if (IrReceiver.decode()) {
-    /*
-    * Print a short summary of received data
-    */
+    Serial.println("L");
     IrReceiver.printIRResultShort(&Serial);
     IrReceiver.printIRSendUsage(&Serial);
     if (IrReceiver.decodedIRData.protocol == UNKNOWN) {
@@ -89,27 +80,33 @@ void loop() {
     /*
          * Finally, check the received data and perform actions according to the received command
          */
-    // Keeps searching for connecting
-        if (!client.connect(host, httpPort)) {
-          Serial.printf("\n No connection");
-          delay(500);
-          return;
-        }
-        Serial.printf("\n Connected");
-    if (IrReceiver.decodedIRData.command == 0x10 && IrReceiver.decodedIRData.address == 0x01) {
-        client.write("1");
-        client.flush();
-        delay(300);
-    } else{
-      Serial.printf("\n Noise");
-      client.write("0");
-      client.flush();
-      delay(300);
-    }
-  }else{
-    Serial.printf("\n No data");
-    client.write("2");
-    client.flush();
-    delay(300);
+  } else {
+    Serial.println("xL");
   }
+  IrReceiver.setReceivePin(13);
+  delay(100);
+  if (IrReceiver.decode()) {
+    Serial.println("R");
+    IrReceiver.printIRResultShort(&Serial);
+    IrReceiver.printIRSendUsage(&Serial);
+    if (IrReceiver.decodedIRData.protocol == UNKNOWN) {
+      Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
+      // We have an unknown protocol here, print more info
+      IrReceiver.printIRResultRawFormatted(&Serial, true);
+    }
+    Serial.println();
+
+    /*
+         * !!!Important!!! Enable receiving of the next value,
+         * since receiving has stopped after the end of the current received data packet.
+         */
+    IrReceiver.resume();  // Enable receiving of the next value
+
+    /*
+         * Finally, check the received data and perform actions according to the received command
+         */
+  } else {
+    Serial.println("xR");
+  }
+  delay(1000);
 }

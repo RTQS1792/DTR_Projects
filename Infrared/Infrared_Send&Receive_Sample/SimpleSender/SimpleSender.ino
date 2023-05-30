@@ -56,6 +56,5 @@ void loop() {
 
     IrSender.sendNEC(0x01, sCommand, sRepeats);
     // Address is set to 01 to represent the source
-
-    delay(500);  // delay must be greater than 5 ms (RECORD_GAP_MICROS), otherwise the receiver sees it as one long signal
-}
+    delay(10);
+    }
