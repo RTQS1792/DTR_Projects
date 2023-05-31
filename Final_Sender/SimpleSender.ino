@@ -56,5 +56,5 @@ void loop() {
 
     IrSender.sendNEC(0x01, sCommand, sRepeats);
     // Address is set to 01 to represent the source
-    delay(10);
+    delay(200);
     }

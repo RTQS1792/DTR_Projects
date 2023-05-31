@@ -1,8 +1,15 @@
 # Infrared Sender and Receiver Sample
 
-*Last updated by Hanqing on 05/25/2023*
+*Last updated by Hanqing on 05/30/2023*
 
-## Source
+## 📁Files
+
+- SimpleReviever - A receiver using the NEC protocal for singel sensor.
+- SimpleSender - A sender using the NEC protocal.
+- TinyRecv - A proto receiver for two sensors. (**⚠️Bug⚠️**: either two sensors catch the signal at the same time or both of them failed to see the signal)
+- TinyRecvV2 - An updated protol with the same problem as above.
+
+## 🔗Source
 
 SimpleSender and SimpleReciever are both examples in the library **IRremote** form **Arduino**.
 
