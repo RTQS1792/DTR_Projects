@@ -1,3 +1,11 @@
+'''
+Author: Hanqing Qi
+Date: 2023-05-31 15:55:24
+LastEditors: Hanqing Qi
+LastEditTime: 2023-06-01 15:14:00
+FilePath: /Blimps_Team/Python/Infrared_Reciever/boot.py
+Description: The is just the boot file that will let the board run all the python files in it's directory
+'''
 #!/opt/bin/lv_micropython
 import uos as os
 import uerrno as errno
@@ -10,6 +18,7 @@ while True:
         entry = next(iter)
         filename = entry[0]
         file_type = entry[1]
+        # Skip the ireecvdata.py since this is the library file for the IR reciever
         if filename == 'boot.py' or 'irrecvdata.py':
             continue
         else:
