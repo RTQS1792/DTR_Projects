@@ -48,5 +48,5 @@ void loop()
 
     IrSender.sendNEC(0x01, sCommand, sRepeats);
     // NOTE - This delay is related to the receive function. If the delay is too short, the receiver recognizes everything as one long signal or the signal will failed to pass the peak length filter.
-    delay(200);
+    delay(150);
 }
