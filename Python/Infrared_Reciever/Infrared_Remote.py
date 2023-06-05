@@ -22,9 +22,9 @@ try:
         irValueL = recvPinL.my_irread()
         irValueR = recvPinR.my_irread()
         if irValueL:
-            print("Right: ", irValueL)
+            print("Left: ", irValueL)
         if irValueR:
-            print("Left: ", irValueR)
+            print("Right: ", irValueR)
 except Exception as e:
     print(e)
     pass

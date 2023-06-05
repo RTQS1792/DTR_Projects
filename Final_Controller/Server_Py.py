@@ -7,7 +7,7 @@ Description: This is the server that listen to ESP32.
 import socket
 import time
 HOST = "192.168.0.41"  # Standard loopback interface address (localhost)
-PORT = 122  # Port to listen on (non-privileged ports are > 1023)
+PORT = 8848  # Port to listen on (non-privileged ports are > 1023)
 Flag = 0  # Flag to control the car
 
 IP_ADDRESS = '192.168.0.204'
@@ -26,7 +26,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             with conn: 
                 print("Waiting for data...")
                 while True:
-                    data = conn.recv(2)
+                    data = conn.recv(1)
                     # Make sure the buffer is empty before reading
                     if not data:
                         print("No data")                                
@@ -39,26 +39,25 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                             print("Forward")
                             command = 'CMD_MOTOR#1500#1500#1500#1500\n'
                             # cars.send(command.encode('utf-8'))
-                            time.sleep(0.4)
+                            # time.sleep(0.4)
                             command = 'CMD_MOTOR#00#00#00#00\n'
                             # cars.send(command.encode('utf-8'))
                         elif data[0] == 48:
                             print("Inrange")
                             command = 'CMD_MOTOR#1100#1100#-1100#-1100\n'
                             # cars.send(command.encode('utf-8'))
-                            time.sleep(0.1)
+                            # time.sleep(0.1)
                             command = 'CMD_MOTOR#00#00#00#00\n'
                             # cars.send(command.encode('utf-8'))
                         elif data[0] == 50 and Flag >= 3:
                             print("Searching")
                             command = 'CMD_MOTOR#1100#1100#-1100#-1100\n'
                             # cars.send(command.encode('utf-8'))
-                            time.sleep(0.2)
+                            # time.sleep(0.2)
                             command = 'CMD_MOTOR#00#00#00#00\n'
                             # cars.send(command.encode('utf-8'))
-                # time.sleep(0.3)
-    except Exception as e:
-        print(e)
+            # time.sleep(0.3)
+    except:
         command = 'CMD_MOTOR#00#00#00#00\n'
         # cars.send(command.encode('utf-8'))
         print("Closing connection")

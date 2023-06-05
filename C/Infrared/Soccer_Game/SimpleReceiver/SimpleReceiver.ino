@@ -21,7 +21,7 @@
 const char* ssid = "AIRLab-BigLab";        // Wifi name
 const char* password = "Airlabrocks2022";  // Wifi Password
 const char* host = "192.168.0.41";         // Host IP
-const int httpPort = 80;                   // Port
+const int httpPort = 8848;                   // Port
 WiFiClient client;
 // END WIFI ------------------------------------------------
 

@@ -30,6 +30,7 @@ Catch = 0
 sendFlag = 00
 # Signal
 Sig = 0x807f08f7
+# Sig = 0xff30cf
 
 def connectWifi(ssid, passwd):
     global wlan

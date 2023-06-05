@@ -2,7 +2,5 @@
 
 This repository contains the code for the blimps competition happens in Nov.
 
-## Update 
-
-- Week 1
-  - 06/05 - V2 Reciever on python has **40** percent receiving rate. There will be continuous noise if the socket connection is on.
+## Document
+https://billy-1217.notion.site/Blimps_Team-915659ed6c7e4cd0a250ceccc0466b16?pvs=4

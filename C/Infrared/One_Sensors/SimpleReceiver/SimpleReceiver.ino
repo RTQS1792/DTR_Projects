@@ -45,7 +45,9 @@
 const char* ssid = "AIRLab-BigLab"; // Wifi name
 const char* password = "Airlabrocks2022"; // Wifi Password
 const char* host = "192.168.0.41";  // Host IP
-const int httpPort = 80;            // Port
+const int httpPort = 8848;            // Port
+int Total = 0;
+int Catch = 0;
 WiFiClient client;
 // END WIFI ------------------------------------------------
 
@@ -91,15 +93,16 @@ void loop() {
      * and up to 32 bit raw data in IrReceiver.decodedIRData.decodedRawData
      */
   if (IrReceiver.decode()) {
+    Total++;
     /*
     * Print a short summary of received data
     */
-    IrReceiver.printIRResultShort(&Serial);
-    IrReceiver.printIRSendUsage(&Serial);
+    // IrReceiver.printIRResultShort(&Serial);
+    // IrReceiver.printIRSendUsage(&Serial);
     if (IrReceiver.decodedIRData.protocol == UNKNOWN) {
-      Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
+      // Serial.println(F("Received noise or an unknown (or not yet enabled) protocol"));
       // We have an unknown protocol here, print more info
-      IrReceiver.printIRResultRawFormatted(&Serial, true);
+      // IrReceiver.printIRResultRawFormatted(&Serial, true);
     }
     Serial.println();
 
@@ -114,16 +117,24 @@ void loop() {
          */
     // Keeps searching for connecting
         if (!client.connect(host, httpPort)) {
+          Total--;
           Serial.printf("\n No connection");
           delay(500);
           return;
         }
-        Serial.printf("\n Connected");
+        // Serial.printf("\n Connected");
     if (IrReceiver.decodedIRData.command == 0x10 && IrReceiver.decodedIRData.address == 0x01) {
         client.write("1");
+        Catch++;
+        Serial.println(Catch);
+        Serial.println(Total);
+        double rate = (double)Catch/(double)Total;
+        Serial.println(rate);
         client.flush();
         delay(300);
     } else{
+      Serial.println(IrReceiver.decodedIRData.command);
+      Serial.println(IrReceiver.decodedIRData.address);
       Serial.printf("\n Noise");
       client.write("0");
       client.flush();
