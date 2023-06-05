@@ -1,17 +1,18 @@
 '''
-Author: Hanqing Qi
-Date: 2023-05-31 15:55:24
-LastEditors: Hanqing Qi
-LastEditTime: 2023-06-01 16:19:49
-FilePath: /Blimps_Team/Final_Receiver/Infrared_Remote_UDP.py
-Description: This is the infrared reciever file that will be used to recieve the IR signal from the remote
+Author       : Hanqing Qi
+Date         : 2023-06-02 19:02:40
+LastEditors  : Hanqing Qi
+LastEditTime : 2023-06-05 18:56:33
+FilePath     : /Blimps_Team/Final_Receiver/Infrared_Remote_UPD_V2.py
+Description  : This is the main program for the Final Receiver
 '''
 # Import the library for the IR reciever
 from irrecvdata import irGetCMD
 import utime
+
 # Import the library for the network connection
-import network 
-import socket 
+import network
+import socket
 import time
 
 # Variables for the network connection
@@ -19,8 +20,8 @@ ssidRouter = "AIRLab-BigLab"
 passwordRouter = "Airlabrocks2022"
 host = "192.168.0.41"
 port = 8848
-wlan=None 
-s=None
+wlan = None
+s = None
 
 # Temp Counter
 Total = 0
@@ -29,8 +30,9 @@ Catch = 0
 # Send Flag
 sendFlag = 00
 # Signal
-Sig = 0x807f08f7
+Sig = 0x807F08F7
 # Sig = 0xff30cf
+
 
 def connectWifi(ssid, passwd):
     global wlan
@@ -39,27 +41,28 @@ def connectWifi(ssid, passwd):
     wlan.disconnect()
     wlan.connect(ssid, passwd)
 
-    while wlan.ifconfig()[0] == '0.0.0.0':
+    while wlan.ifconfig()[0] == "0.0.0.0":
         time.sleep(1)
     return True
 
+
 print("==============Start of program==============")
-recvPinL = irGetCMD(15) # Left reciever has PIN 15
+recvPinL = irGetCMD(15)  # Left reciever has PIN 15
 print("Left eye online")
-recvPinR = irGetCMD(14) # Right reciever has PIN 14
+recvPinR = irGetCMD(14)  # Right reciever has PIN 14
 print("Right eye online")
 try:
     connectWifi(ssidRouter, passwordRouter)
-    
+
     # Create a UDP socket
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    
+
     print("UDP Connected to:", host, ":", port)
     print("Listening")
     while True:
-        sendFlag = 00 
-        utime.sleep_ms(200) 
-        print("."), 
+        sendFlag = 00
+        utime.sleep_ms(200)
+        print("."),
         irValueL = recvPinL.my_irread()
         irValueR = recvPinR.my_irread()
         if irValueL:
@@ -88,13 +91,13 @@ try:
             Catch += 1
         # Send the data using UDP
         s.sendto(str(sendFlag).encode(), (host, port))
-        # utime.sleep_ms(100) 
-            
+        # utime.sleep_ms(100)
+
 except KeyboardInterrupt:
     print("UDP close, please reset!")
     if s:
         s.close()
     wlan.disconnect()
     wlan.active(False)
-    print(Total, Catch, Catch/Total)
+    print(Total, Catch, Catch / Total)
     pass

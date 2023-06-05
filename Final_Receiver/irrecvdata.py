@@ -1,9 +1,9 @@
 """
 Author: Hanqing Qi
-Date: 2023-05-31 15:55:24
+Date: 2023-06-01 16:07:56
 LastEditors: Hanqing Qi
-LastEditTime: 2023-06-01 15:27:15
-FilePath: /Blimps_Team/Python/Infrared_Reciever/irrecvdata.py
+LastEditTime: 2023-06-05 18:38:12
+FilePath: /Blimps_Team/Final_Receiver/irrecvdata.py
 Description: This is the library file for the IR reciever
 """
 import machine
