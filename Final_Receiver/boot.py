@@ -1,10 +1,10 @@
 '''
-Author: Hanqing Qi
-Date: 2023-05-31 15:55:24
-LastEditors: Hanqing Qi
-LastEditTime: 2023-06-01 15:14:00
-FilePath: /Blimps_Team/Python/Infrared_Reciever/boot.py
-Description: The is just the boot file that will let the board run all the python files in it's directory
+Author       : Hanqing Qi
+Date         : 2023-06-01 16:07:56
+LastEditors  : Hanqing Qi
+LastEditTime : 2023-06-06 17:04:28
+FilePath     : /Blimps_Team/Final_Receiver/boot.py
+Description  : This is the boot file that let the ESP32 automatically run the code in it's directory
 '''
 #!/opt/bin/lv_micropython
 import uos as os
