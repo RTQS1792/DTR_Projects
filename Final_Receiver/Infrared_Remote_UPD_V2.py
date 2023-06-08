@@ -2,8 +2,8 @@
 Author       : Hanqing Qi
 Date         : 2023-06-02 19:02:40
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-06-05 18:56:33
-FilePath     : /Blimps_Team/Final_Receiver/Infrared_Remote_UPD_V2.py
+LastEditTime : 2023-06-08 18:53:13
+FilePath     : /undefined/Users/hanqingqi/Library/CloudStorage/Dropbox/Blimps_Team/Final_Receiver/Infrared_Remote_UPD_V2.py
 Description  : This is the main program for the Final Receiver
 '''
 # Import the library for the IR reciever
@@ -99,5 +99,6 @@ except KeyboardInterrupt:
         s.close()
     wlan.disconnect()
     wlan.active(False)
-    print(Total, Catch, Catch / Total)
+    if Total != 0:
+        print(Total, Catch, Catch / Total)
     pass

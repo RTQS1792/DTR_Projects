@@ -25,7 +25,6 @@ def udp_server():
         # Wait for a connection
         print("waiting to receive message")
         data, address = server_socket.recvfrom(4096)
-
         print(f"received {len(data)} bytes from {address}")
         print(data)
 

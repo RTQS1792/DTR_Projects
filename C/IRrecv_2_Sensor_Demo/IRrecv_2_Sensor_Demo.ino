@@ -26,6 +26,10 @@
 // Note: GPIO 16 won't work on the ESP8266 as it does not have interrupts.
 const uint16_t kRecvPin = 14;
 const uint16_t kRecvPin2 = 15;
+int total = 0;
+int success = 0;
+int Flag1 = 0;
+int Flag2 = 0;
 
 IRrecv irrecv(kRecvPin);
 IRrecv irrecv2(kRecvPin2);
@@ -45,20 +49,28 @@ void setup() {
 
 void loop() {
   if (irrecv.decode(&results)) {
+    Total++;
     // print() & println() can't handle printing long longs. (uint64_t)
     Serial.print("1 ");
     serialPrintUint64(results.value, HEX);
     Serial.println("");
+    if(results.value == 0x807F08F7 || results.value == 0x97CB7FD4 ||results.value == 0xE4F2D735){
+      Serial.println("Traget");
+
+    }
     irrecv.resume();  // Receive the next value
   }
-  /*
+  
   if (irrecv2.decode(&results)) {
     // print() & println() can't handle printing long longs. (uint64_t)
     Serial.print("2 ");
     serialPrintUint64(results.value, HEX);
     Serial.println("");
+    if(results.value == 0x807F08F7){
+      Serial.println("Traget");
+    }
     irrecv2.resume();  // Receive the next value
   }
-  */
+  
   delay(100);
 }

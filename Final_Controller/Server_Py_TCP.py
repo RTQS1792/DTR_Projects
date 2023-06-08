@@ -1,9 +1,12 @@
+'''
+Author       : Hanqing Qi
+Date         : 2023-06-05 17:48:02
+LastEditors  : Hanqing Qi
+LastEditTime : 2023-06-08 16:30:35
+FilePath     : /Blimps_Team/Final_Controller/Server_Py_TCP.py
+Description  : This is the server code for the car using TCP
+'''
 # echo-server.py
-'''
-Author: Hanqing Qi
-Date: 05/25/2023 
-Description: This is the server that listen to ESP32.
-'''
 import socket
 import time
 HOST = "192.168.0.41"  # Standard loopback interface address (localhost)
