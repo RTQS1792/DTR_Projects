@@ -15,7 +15,7 @@
  */
 void setup()
 {
-    pinMode(2, OUTPUT);
+    // pinMode(2, OUTPUT);
 
     Serial.begin(115200);
 
@@ -27,7 +27,7 @@ void setup()
 }
 
 // Setiup the data to be send
-uint8_t sCommand = 0x10; // Command is 0x10
+uint8_t sCommand = 0x11; // Command is 0x10
 uint8_t sRepeats = 1;    // The signal is send only once
 
 /*
@@ -46,7 +46,9 @@ void loop()
     // Serial.println(F("Send standard NEC with 8 bit address"));
     Serial.flush();
 
-    IrSender.sendNEC(0x01, sCommand, sRepeats);
+    // Adress is 0x01
+    IrSender.sendNEC(0x11, sCommand, sRepeats);
     // NOTE - This delay is related to the receive function. If the delay is too short, the receiver recognizes everything as one long signal or the signal will failed to pass the peak length filter.
-    delay(150);
+    // Delay 300 is much better than 150
+    delay(827);
 }
