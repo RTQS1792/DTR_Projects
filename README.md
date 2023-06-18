@@ -3,4 +3,4 @@
 This repository contains the code for the blimps competition that happens in Nov.
 
 ## Document
-https://billy-1217.notion.site/Blimps_Team-915659ed6c7e4cd0a250ceccc0466b16?pvs=4
+https://rhinestone-star-fa9.notion.site/Infrared-Send-Receiver-eee88f7224f3451fbd7944756aae4fd6?pvs=4
