@@ -2,8 +2,8 @@
 Author       : Hanqing Qi
 Date         : 2023-06-19 14:15:34
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-06-19 15:18:16
-FilePath     : /Simulation/Cone.py
+LastEditTime : 2023-06-20 18:59:45
+FilePath     : /Blimps_Team/iPy_notebooks/Simulation/Cone.py
 Description  : This is a class to represent a cone
 '''
 
@@ -20,7 +20,9 @@ class Cone:
         self.radius = radius  # radius is a float
         self.starting_angle = starting_angle  # starting angle is a float in degrees
         self.end_angle = end_angle  # end angle is a float in degrees
-        self.rotate_speed = rotate_speed  # rotate speed is a float in degrees per second
+        self.rotate_speed = (
+            rotate_speed  # rotate speed is a float in degrees per second
+        )
 
     def getCenter(self):
         return self.center
@@ -33,7 +35,7 @@ class Cone:
 
     def getEndAngle(self):
         return self.end_angle
-    
+
     def getRotateSpeed(self):
         return self.rotate_speed
 
@@ -51,14 +53,15 @@ class Cone:
         if theta < 0:
             theta += 360
 
-        if (
-            r <= self.radius
-            and theta >= self.starting_angle
-            and theta <= self.end_angle
-        ):
-            return True
-        else:
-            return False
+        # Check if the center of cone_1 is in cone_2
+        if r <= self.radius:
+            if self.starting_angle <= theta <= self.end_angle:
+                return True
+            elif (self.starting_angle >= self.end_angle and (
+                self.starting_angle <= theta or theta <= self.end_angle
+            )):
+                return True
+        return False
 
     def setCenter(self, center):
         self.center = center
