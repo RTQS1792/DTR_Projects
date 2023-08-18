@@ -2,8 +2,8 @@
 Author       : Hanqing Qi
 Date         : 2023-07-20 13:34:09
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-07-28 14:50:01
-FilePath     : /ESP_NOW/Serial_Communication/Serial_Sender.py
+LastEditTime : 2023-08-01 16:52:01
+FilePath     : /undefined/Users/hanqingqi/Library/CloudStorage/Dropbox/Blimps_Team/ESP_NOW_Proto/Serial_Communication/Serial_Sender.py
 Description  : Sender to send data to ESP32 through hardware serial port
 '''
 import serial

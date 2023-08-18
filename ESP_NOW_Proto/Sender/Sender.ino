@@ -82,12 +82,16 @@ Control_Input params;
 // Flag for tracking if the data stream has started
 bool isDataStarted = false;
 
+// Flag indicates if we have received any data
+bool HaveData = false;
+
 // Buffer for storing incoming serial data
 String data;
 
 // Main function which is called repeatedly
 void loop()
 {
+  HaveData = false;
   delay(20);
   while (Serial.available())
   {
@@ -96,6 +100,7 @@ void loop()
     // When '<' is detected, start recording data
     if (c == '<')
     {
+      HaveData = true;
       isDataStarted = true;
       data = "";
     }
@@ -111,14 +116,15 @@ void loop()
       data += c;
     }
   }
+  if (HaveData) {
+    esp_err_t result = esp_now_send(0, (uint8_t *) &params, sizeof(Control_Input));
 
-  esp_err_t result = esp_now_send(0, (uint8_t *) &params, sizeof(Control_Input));
-
-  if (result == ESP_OK) {
-    Serial.println("Sent with success");
-  }
-  else {
-    Serial.println("Error sending the data");
+    if (result == ESP_OK) {
+      // Serial.println("Sent with success");
+    }
+    else {
+      Serial.println("Error sending the data");
+    }
   }
 }
 
@@ -152,7 +158,7 @@ void process_data(String &data)
   }
   else
   {
-    Serial.print("Data received successfully: ");
+    Serial.print("Success: ");
     print_params();
   }
 }
@@ -240,6 +246,7 @@ void print_params()
   Serial.print(", ");
   Serial.print(params.p12);
   Serial.print(", ");
-  Serial.println(params.p13);
+  Serial.print(params.p13);
+  Serial.print("----");
 }
 
