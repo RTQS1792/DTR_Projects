@@ -92,7 +92,6 @@ String data;
 void loop()
 {
   HaveData = false;
-  delay(20);
   while (Serial.available())
   {
     char c = Serial.read();
@@ -109,6 +108,36 @@ void loop()
     {
       isDataStarted = false;
       process_data(data);
+    }
+    else if (c == '$')
+    {
+      isDataStarted = !isDataStarted; // Toggle data start/end
+      if (!isDataStarted)             // If data ended
+      {
+        int numOfAddresses = data.substring(0, data.indexOf('#')).toInt();
+
+        if (numOfAddresses > 5)
+        {
+          Serial.println("Error: Too many MAC addresses provided");
+          return;
+        }
+
+        data = data.substring(data.indexOf('#') + 1); // Remove the numOfAddresses part
+
+        for (int i = 0; i < numOfAddresses; i++)
+        {
+          String mac = data.substring(0, data.indexOf('#'));
+          Serial.print(mac);
+          Serial.print(" - ");
+          data = data.substring(data.indexOf('#') + 1); // Move to next address or end
+        }
+        data = "";
+      }
+      else
+      {
+        data = ""; // Initialize data for MAC addresses
+        Serial.println();
+      }
     }
     // Record data if it's started
     else if (isDataStarted)

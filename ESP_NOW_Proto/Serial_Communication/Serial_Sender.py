@@ -2,7 +2,7 @@
 Author       : Hanqing Qi
 Date         : 2023-07-20 13:34:09
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-08-01 16:52:01
+LastEditTime : 2023-08-21 16:39:49
 FilePath     : /undefined/Users/hanqingqi/Library/CloudStorage/Dropbox/Blimps_Team/ESP_NOW_Proto/Serial_Communication/Serial_Sender.py
 Description  : Sender to send data to ESP32 through hardware serial port
 '''
@@ -10,6 +10,7 @@ import serial
 import time
 import numpy as np
 
+TEST_MESSAGE = "$4#11:11:11:11:11:11#22:22:22:22:22:22#33:33:33:33:33:33#44:44:44:44:44:44$"
 
 class Control_Input:
     def __init__(self, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13):
@@ -79,12 +80,20 @@ input = Control_Input(
 )
 
 ser = serial.Serial(
-    '/dev/cu.wchusbserial2140', 115200
+    '/dev/cu.wchusbserial130', 115200
 )  # Adjust the COM port and baud rate as necessary
 
 # Print the data and round it to 2 decimal places
 # print("Sending data to ESP32: ", input)
 
+message = str(TEST_MESSAGE)
+ser.write(message.encode())
+try:
+    incoming = ser.readline().decode(errors='ignore').strip()
+    print("Received Data: " + incoming)
+except UnicodeDecodeError:
+    print("Received malformed data!")
+    
 try:
     for i in range(15):
         time.sleep(0.02)
