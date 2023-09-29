@@ -7,11 +7,11 @@ MAC_ADDRESSES = [
     "11:11:11:2b:11:11",
     "22:22:22:22:22:22",
     "33:33:33:33:33:33",
-    "44:44:44:44:44:44",
+    "44:44:44:44:44:11",
     "54:4a:16:1a:1a:1a",
 ]
 SLAVE_ID = 3
-BRODCAST_MODE = 0
+BRODCAST_MODE = 1
 DELIMITER = "|"
 
 
@@ -44,8 +44,8 @@ class ControlInput:
             + DELIMITER.join(map(str, self.params))
             + DELIMITER
             + str(self.slave_id)
-            # + DELIMITER
-            # + str(self.broadcast_mode)
+            + DELIMITER
+            + str(self.broadcast_mode)
             + ">"
         )
 

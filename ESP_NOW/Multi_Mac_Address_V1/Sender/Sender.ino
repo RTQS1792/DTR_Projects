@@ -2,7 +2,7 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-08-22 18:52:01
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-09-29 15:56:20
+ * @LastEditTime : 2023-09-29 17:42:02
  * @FilePath     : /Multi_Mac_Address_V1/Sender/Sender.ino
  * @Description  : This is a sender code for the ESP32. It receives data from the serial port and sends it to the receivers.
  */
@@ -24,17 +24,17 @@ typedef struct ControlInput
 } ControlInput;
 
 ControlInput controlParams;
-bool receiving_package = false; // If the serial port is receiving a package
-bool complete_package = false; // If the serial port has received a complete package to send
-bool isAddressStarted = false;
+bool receivingPackage = false; // If the serial port is receiving a package
+bool completePackage = false;  // If the serial port has received a complete package to send
 String inputData;
-int selectedPeer = -1; // To store the selected peer from the extra parameter.
+int selectedPeer = -1; // To store the selected peer from the extra parameters.
+int brodcastMode = 0;  // To store the broadcast mode from the extra parameters.
 
 esp_now_peer_info_t peerInfo; // The peer info structure
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status);
-void process_data(String &data);
-int process_address(String &data);
+void processData(String &data);
+int processAddress(String &data);
 void parseAndStoreMac(int index, String &mac);
 void print_params();
 
@@ -52,46 +52,41 @@ void loop()
     char c = Serial.read();
     if (c == '$') // The package contains the addresses of the receivers
     {
-      // Toggle the receiving_package flag to indicate the start or end of the address package
-      receiving_package = !receiving_package;
-      isAddressStarted = false;
+      // Toggle the receivingPackage flag to indicate the start or end of the address package
+      receivingPackage = !receivingPackage;
       // If the flag is false, we have received the end of the address package
-      if (!receiving_package) 
+      if (!receivingPackage)
       {
         // Process the address package
-        numOfAddresses = process_address(inputData);
+        numOfAddresses = processAddress(inputData);
+        if (numOfAddresses > 0) {
+            initializeESPNowPeers();
+        }
       }
     }
     else if (c == '<') // The beginning of the package containing the control parameters
     {
       // We are in the middle of processing a package, no complete package to send
-      complete_package = false; 
-      receiving_package = true; 
-      inputData = "";
+      completePackage = false;
+      receivingPackage = true;
     }
     else if (c == '>') // The end of the package containing the control parameters
     {
       // We have received a complete package to send
-      complete_package = true;
-      receiving_package = false;
-      process_data(inputData);
+      completePackage = true;
+      receivingPackage = false;
+      processData(inputData);
     }
-    else if (receiving_package)
+    else if (receivingPackage)
     {
       inputData += c;
     }
   }
 
-  if (complete_package) // We have a complete package that has been processed
+  if (completePackage) // We have a complete package that has been processed
   {
-    complete_package = false;
+    completePackage = false;
     esp_err_t result;
-
-    if (!isAddressStarted)
-    {
-      isAddressStarted = true;
-      initializeESPNowPeers();
-    }
 
     if (selectedPeer >= 0 && selectedPeer < numOfAddresses)
     {
@@ -99,14 +94,21 @@ void loop()
     }
     else
     {
-      result = esp_now_send(0, (uint8_t *)&controlParams, sizeof(ControlInput)); // Default sending behavior
+      uint8_t defaultBroadcastMAC[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      result = esp_now_send(defaultBroadcastMAC, (uint8_t *)&controlParams, sizeof(ControlInput)); // Default sending behavior
     }
     // Consider handling the result here...
   }
 }
 
+/**
+ * @description: Initialize the ESP-NOW peers
+ * @return      {*} void
+ */
 void initializeESPNowPeers()
 {
+  esp_now_deinit();
+
   if (esp_now_init() != ESP_OK)
   {
     Serial.println("Error initializing ESP-NOW");
@@ -114,16 +116,18 @@ void initializeESPNowPeers()
   }
 
   esp_now_register_send_cb(OnDataSent);
-  memcpy(peerInfo.peer_addr, broadcastAddresses[selectedPeer], MAC_LENGTH);
 
-  if (esp_now_add_peer(&peerInfo) != ESP_OK)
+  for (int i = 0; i < numOfAddresses; i++) 
   {
-    Serial.println("Failed to add peer");
-    return;
+    memcpy(peerInfo.peer_addr, broadcastAddresses[i], MAC_LENGTH);
+    if (esp_now_add_peer(&peerInfo) != ESP_OK)
+    {
+      Serial.println("Failed to add peer");
+    }
   }
 }
 
-void process_data(String &data)
+void processData(String &data)
 {
   int paramIndex = 0;
 
@@ -131,11 +135,11 @@ void process_data(String &data)
   {
     int split_position = data.indexOf('|');
 
-    if (split_position == -1)
+    if (split_position == -1) // We are at the last parameter
     {
-      if (paramIndex == NUM_PARAMS - 1)
+      if (paramIndex == NUM_PARAMS - 1) // If the last parameter is index NUM_PARAMS - 1, the package is complete
       {
-        selectedPeer = data.toInt();
+        brodcastMode = data.toInt();
         paramIndex++;
       }
       else
@@ -147,9 +151,14 @@ void process_data(String &data)
 
     String param = data.substring(0, split_position);
 
-    if (paramIndex < NUM_CONTROL_PARAMS)
+    if (paramIndex < NUM_CONTROL_PARAMS) // The first NUM_CONTROL_PARAMS - 1 parameters are control parameters
     {
       controlParams.params[paramIndex++] = param.toFloat();
+    }
+    else if (paramIndex == NUM_CONTROL_PARAMS) // The NUM_CONTROL_PARAMSth parameter is the selected peer
+    {
+      selectedPeer = param.toInt();
+      paramIndex++;
     }
     else
     {
@@ -168,9 +177,15 @@ void process_data(String &data)
   {
     print_params();
   }
+
 }
 
-int process_address(String &data)
+/**
+ * @description: Process the address package
+ * @param       {String} &data: The address package
+ * @return      {int} The number of addresses
+ */
+int processAddress(String &data)
 {
   int numAddresses = data.substring(0, data.indexOf('#')).toInt();
   if (numAddresses > MAX_RECEIVERS)
@@ -204,6 +219,12 @@ int process_address(String &data)
   return numAddresses;
 }
 
+/**
+ * @description: Parse the MAC address and store it in the broadcastAddresses array
+ * @param       {int} index: The index of the address in the array
+ * @param       {String} &mac: The MAC address
+ * @return      {*} void
+ */
 void parseAndStoreMac(int index, String &mac)
 {
   int prevPos = 0;
@@ -228,6 +249,10 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
+/**
+ * @description: Print the control params
+ * @return      {*} void
+ */
 void print_params()
 {
   for (int i = 0; i < NUM_CONTROL_PARAMS; i++)
@@ -238,6 +263,16 @@ void print_params()
       Serial.print(", ");
     }
   }
-  Serial.print(" -- to peer: ");
-  Serial.println(selectedPeer);
+  if (brodcastMode)
+  {
+    Serial.print(" ---- broadcast on channel: ");
+    Serial.print(brodcastMode);
+    selectedPeer = -1; // Reset the selected peer
+  }
+  else
+  {
+    Serial.print(" ---- to peer: ");
+    Serial.print(selectedPeer);
+  }
+  Serial.print(" ----- ");
 }
