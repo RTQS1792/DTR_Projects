@@ -10,7 +10,8 @@ MAC_ADDRESSES = [
     "44:44:44:44:44:44",
     "54:4a:16:1a:1a:1a",
 ]
-SLAVE_ID = 4
+SLAVE_ID = 3
+BRODCAST_MODE = 0
 DELIMITER = "|"
 
 
@@ -43,8 +44,8 @@ class ControlInput:
             + DELIMITER.join(map(str, self.params))
             + DELIMITER
             + str(self.slave_id)
-            + DELIMITER
-            + str(self.broadcast_mode)
+            # + DELIMITER
+            # + str(self.broadcast_mode)
             + ">"
         )
 
@@ -88,21 +89,21 @@ def esp_now_send(ser, input):
 
 
 if __name__ == "__main__":
-    sock = espnow_init()
+    myserial = espnow_init()
     # Clear the buffer
-    while sock.in_waiting:
-        print(sock.readline().decode(errors="ignore").strip())
+    while myserial.in_waiting:
+        print(myserial.readline().decode(errors="ignore").strip())
     time.sleep(2)
-    send_mac_addresses(sock)
-
+    send_mac_addresses(myserial)
+    # sys.exit(0)
     try:
         while True:
             esp_now_input = ControlInput(
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, SLAVE_ID=SLAVE_ID
+                0.12, 1.23, 2.34, 3.45, 4.56, 5.67, 6.78, 7.89, 8.9, 9.01, 10.12, 11.23, 12.34, slave_id=SLAVE_ID, broadcast_mode=BRODCAST_MODE
             )
-            print("Sending Data: " + str(esp_now_input))
-            esp_now_send(sock, esp_now_input)
-            time.sleep(0.02)
+            # print("Sending Data: " + str(esp_now_input))
+            esp_now_send(myserial, esp_now_input)
+            time.sleep(0.2)
     except KeyboardInterrupt:
         print("The end")
-        sock.close()
+        myserial.close()
