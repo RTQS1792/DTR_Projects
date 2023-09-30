@@ -2,8 +2,8 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-08-22 18:52:01
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-09-29 17:42:02
- * @FilePath     : /Multi_Mac_Address_V1/Sender/Sender.ino
+ * @LastEditTime : 2023-09-30 16:35:46
+ * @FilePath     : /DTR_Projects/ESP_NOW/Multi_Mac_Address_V1/Sender/Sender.ino
  * @Description  : This is a sender code for the ESP32. It receives data from the serial port and sends it to the receivers.
  */
 
@@ -12,23 +12,30 @@
 
 const int NUM_PARAMS = 15;         // Number of parameters contained in the serial messages
 const int NUM_CONTROL_PARAMS = 13; // Number of parameters used for control
-const int MAX_RECEIVERS = 5;       // Maximum number of receiver addresses
+const int MAX_RECEIVERS = 10;       // Maximum number of receiver addresses
 const int MAC_LENGTH = 6;          // MAC address length
 
-uint8_t broadcastAddresses[MAX_RECEIVERS][MAC_LENGTH] = {}; // The MAC addresses of the receivers
-int numOfAddresses = 0;                                     // Number of addresses received
+uint8_t slaveAddresses[MAX_RECEIVERS][MAC_LENGTH] = {}; // The MAC addresses of the receivers
+uint8_t nullAddress[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+uint8_t brodcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+int numOfAddresses = 0; // Number of addresses received
+int slaveIndex = 0;     // The index of the current receiver
+const int MAX_INPUT_SIZE = 1024; // Define a reasonable maximum size for inputData based on your application needs
 
 typedef struct ControlInput
 {
   float params[NUM_CONTROL_PARAMS];
+  int channel; // The channel to broadcast on
 } ControlInput;
 
 ControlInput controlParams;
+ControlInput backupControlParams;
+
+
 bool receivingPackage = false; // If the serial port is receiving a package
 bool completePackage = false;  // If the serial port has received a complete package to send
 String inputData;
-int selectedPeer = -1; // To store the selected peer from the extra parameters.
-int brodcastMode = 0;  // To store the broadcast mode from the extra parameters.
 
 esp_now_peer_info_t peerInfo; // The peer info structure
 
@@ -79,7 +86,16 @@ void loop()
     }
     else if (receivingPackage)
     {
-      inputData += c;
+      if (inputData.length() < MAX_INPUT_SIZE)
+      {
+        inputData += c;
+      }
+      else
+      {
+        Serial.println("Error: input data overflow!!!");
+        receivingPackage = false;
+        inputData = "";
+      }
     }
   }
 
@@ -88,14 +104,17 @@ void loop()
     completePackage = false;
     esp_err_t result;
 
-    if (selectedPeer >= 0 && selectedPeer < numOfAddresses)
+    if (slaveIndex >= 0 && slaveIndex < numOfAddresses)
     {
-      result = esp_now_send(broadcastAddresses[selectedPeer], (uint8_t *)&controlParams, sizeof(ControlInput));
+      result = esp_now_send(slaveAddresses[slaveIndex], (uint8_t *)&controlParams, sizeof(ControlInput));
+    }
+    else if (slaveIndex == -1)
+    {
+      result = esp_now_send(brodcastAddress, (uint8_t *)&controlParams, sizeof(ControlInput)); // Broadcast to all receivers
     }
     else
     {
-      uint8_t defaultBroadcastMAC[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      result = esp_now_send(defaultBroadcastMAC, (uint8_t *)&controlParams, sizeof(ControlInput)); // Default sending behavior
+      result = esp_now_send(nullAddress, (uint8_t *)&controlParams, sizeof(ControlInput)); // Default sending behavior
     }
     // Consider handling the result here...
   }
@@ -119,7 +138,7 @@ void initializeESPNowPeers()
 
   for (int i = 0; i < numOfAddresses; i++) 
   {
-    memcpy(peerInfo.peer_addr, broadcastAddresses[i], MAC_LENGTH);
+    memcpy(peerInfo.peer_addr, slaveAddresses[i], MAC_LENGTH);
     if (esp_now_add_peer(&peerInfo) != ESP_OK)
     {
       Serial.println("Failed to add peer");
@@ -127,57 +146,67 @@ void initializeESPNowPeers()
   }
 }
 
+/**
+ * @description: Process the control parameter package
+ * @param       {String} &data: The formatted string containing the control parameters
+ * @return      {*} void
+ */
 void processData(String &data)
 {
-  int paramIndex = 0;
+  int param_counter = 0;
 
-  while (data.length() > 0 && paramIndex < NUM_PARAMS)
+  while (data.length() > 0 && param_counter < NUM_PARAMS)
   {
     int split_position = data.indexOf('|');
 
     if (split_position == -1) // We are at the last parameter
     {
-      if (paramIndex == NUM_PARAMS - 1) // If the last parameter is index NUM_PARAMS - 1, the package is complete
+      if (param_counter == NUM_PARAMS - 1) // If the last parameter is index NUM_PARAMS - 1, the package is complete
       {
-        brodcastMode = data.toInt();
-        paramIndex++;
+        slaveIndex = data.toInt();
+        param_counter++;
       }
       else
       {
         Serial.println("Error: data is broken");
+        // Scroll back to previous control params
+        controlParams = backupControlParams;
       }
       break;
     }
 
     String param = data.substring(0, split_position);
 
-    if (paramIndex < NUM_CONTROL_PARAMS) // The first NUM_CONTROL_PARAMS - 1 parameters are control parameters
+    if (param_counter < NUM_CONTROL_PARAMS) // The first NUM_CONTROL_PARAMS parameters are control parameters
     {
-      controlParams.params[paramIndex++] = param.toFloat();
+      controlParams.params[param_counter++] = param.toFloat();
     }
-    else if (paramIndex == NUM_CONTROL_PARAMS) // The NUM_CONTROL_PARAMSth parameter is the selected peer
+    else if (param_counter == NUM_CONTROL_PARAMS) // The last parameter is boardcast mode
     {
-      selectedPeer = param.toInt();
-      paramIndex++;
+      controlParams.channel = param.toInt();
+      param_counter++;
     }
     else
     {
       Serial.println("Error: more floats than expected");
+      // Scroll back to previous control params
+      controlParams = backupControlParams;
       break;
     }
-
     data = data.substring(split_position + 1);
   }
 
-  if (paramIndex != NUM_PARAMS)
+  if (param_counter != NUM_PARAMS)
   {
     Serial.println("Error: data is broken");
+    // Scroll back to previous control params
+    controlParams = backupControlParams;
   }
   else
   {
+    backupControlParams = controlParams;
     print_params();
   }
-
 }
 
 /**
@@ -187,8 +216,8 @@ void processData(String &data)
  */
 int processAddress(String &data)
 {
-  int numAddresses = data.substring(0, data.indexOf('#')).toInt();
-  if (numAddresses > MAX_RECEIVERS)
+  int address_counter = data.substring(0, data.indexOf('#')).toInt();
+  if (address_counter > MAX_RECEIVERS)
   {
     Serial.print(data);
     Serial.print(" ");
@@ -200,7 +229,7 @@ int processAddress(String &data)
   }
 
   data = data.substring(data.indexOf('#') + 1);
-  for (int i = 0; i < numAddresses; i++)
+  for (int i = 0; i < address_counter; i++)
   {
     int nextAddrEndPos = data.indexOf('#');
     String mac = nextAddrEndPos != -1 ? data.substring(0, nextAddrEndPos) : data;
@@ -208,19 +237,19 @@ int processAddress(String &data)
     data = data.substring(mac.length() + 1);
   }
 
-  for (int i = numAddresses; i < MAX_RECEIVERS; i++)
+  for (int i = address_counter; i < MAX_RECEIVERS; i++)
   {
-    memset(broadcastAddresses[i], 0, MAC_LENGTH); // clear out remaining addresses
+    memset(slaveAddresses[i], 0, MAC_LENGTH); // clear out remaining addresses
   }
 
   Serial.print("Number of addresses: ");
-  Serial.println(numAddresses);
+  Serial.println(address_counter);
   data = "";
-  return numAddresses;
+  return address_counter;
 }
 
 /**
- * @description: Parse the MAC address and store it in the broadcastAddresses array
+ * @description: Parse the MAC address and store it in the slaveAddresses array
  * @param       {int} index: The index of the address in the array
  * @param       {String} &mac: The MAC address
  * @return      {*} void
@@ -232,7 +261,7 @@ void parseAndStoreMac(int index, String &mac)
   {
     int pos = mac.indexOf(':', prevPos);
     pos = (pos == -1) ? mac.length() : pos;
-    broadcastAddresses[index][j] = strtol(mac.substring(prevPos, pos).c_str(), NULL, 16);
+    slaveAddresses[index][j] = strtol(mac.substring(prevPos, pos).c_str(), NULL, 16);
     prevPos = pos + 1;
   }
 }
@@ -263,16 +292,15 @@ void print_params()
       Serial.print(", ");
     }
   }
-  if (brodcastMode)
+  if (slaveIndex == -1)
   {
     Serial.print(" ---- broadcast on channel: ");
-    Serial.print(brodcastMode);
-    selectedPeer = -1; // Reset the selected peer
+    Serial.print(controlParams.channel);
   }
   else
   {
     Serial.print(" ---- to peer: ");
-    Serial.print(selectedPeer);
+    Serial.print(slaveIndex);
   }
   Serial.print(" ----- ");
 }
