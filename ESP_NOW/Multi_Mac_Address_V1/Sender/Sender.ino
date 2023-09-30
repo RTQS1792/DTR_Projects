@@ -2,7 +2,7 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-08-22 18:52:01
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-09-30 17:31:31
+ * @LastEditTime : 2023-09-30 18:27:52
  * @FilePath     : /DTR_Projects/ESP_NOW/Multi_Mac_Address_V1/Sender/Sender.ino
  * @Description  : This is a sender code for the ESP32. It receives data from the serial port and sends it to the receivers.
  */
@@ -144,6 +144,12 @@ void initializeESPNowPeers()
       Serial.println("Failed to add peer");
     }
   }
+  // Register the broadcast address
+  memcpy(peerInfo.peer_addr, brodcastAddress, MAC_LENGTH);
+  if (esp_now_add_peer(&peerInfo) != ESP_OK)
+  {
+    Serial.println("Failed to add broadcast address");
+  }
 }
 
 /**
@@ -275,7 +281,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 
   Serial.print("Packet to: ");
   Serial.print(macStr);
-  Serial.print(" send status:\t");
+  Serial.print(" Status: ");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
@@ -294,15 +300,16 @@ void print_params()
       Serial.print(", ");
     }
   }
+  Serial.print("\t");
   if (slaveIndex == -1)
   {
-    Serial.print(" ---- broadcast on channel: ");
+    Serial.print("broadcasting on: C");
     Serial.print(controlParams.channel);
   }
   else
   {
-    Serial.print(" ---- to peer: ");
+    Serial.print("to peer: ");
     Serial.print(slaveIndex);
   }
-  Serial.print(" ----- ");
+  Serial.print("\t");
 }
