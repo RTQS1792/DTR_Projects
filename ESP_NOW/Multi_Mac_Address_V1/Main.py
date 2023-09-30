@@ -2,7 +2,7 @@
 Author       : Hanqing Qi
 Date         : 2023-09-29 16:25:39
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-09-30 17:13:01
+LastEditTime : 2023-09-30 17:36:13
 FilePath     : /DTR_Projects/ESP_NOW/Multi_Mac_Address_V1/Main.py
 Description  : Main for testing ESP-NOW Communication
 """
@@ -18,9 +18,20 @@ LIST_OF_MAC_ADDRESS = [
     "5f:13:87:d0:69:72",
     "4a:22:3b:e9:50:61",
 ]
-SLAVE_INDEX = 0
+SLAVE_INDEX = 3
 BRODCAST_CHANNEL = 1
+RANDOM_TEST_INPUT = [3.47, 8.92, 0.26, 4.58, 9.14, 7.60, 2.35, 6.84, 5.97, 1.23, 8.50, 0.78, 6.41]
 
 if __name__ == "__main__":
     # Initialize the serial connection
-    esp_now = ESPNOWControl(PORT, LIST_OF_MAC_ADDRESS)
+    try:
+        esp_now = ESPNOWControl(PORT, LIST_OF_MAC_ADDRESS)
+        for i in range(5):
+            for j in range(5):
+                esp_now.send(RANDOM_TEST_INPUT, BRODCAST_CHANNEL, j)
+                time.sleep(0.1)
+            RANDOM_TEST_INPUT = [x + 1 for x in RANDOM_TEST_INPUT]
+        esp_now.close()
+    except KeyboardInterrupt:
+        esp_now.close()
+        print("Program terminated by user")
