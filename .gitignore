@@ -2,3 +2,4 @@
 .vscode
 Archives*
 **/*.zip
+__pycache__/
