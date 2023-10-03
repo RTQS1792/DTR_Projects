@@ -2,111 +2,87 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-07-18 16:35:57
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-07-28 14:37:54
- * @FilePath     : /ESP_NOW/Receiver/Receiver.ino
+ * @LastEditTime : 2023-10-03 15:08:52
+ * @FilePath     : /DTR_Projects/ESP_NOW/Multi_Mac_Address_V1/Receiver/Receiver.ino
  * @Description  : This is the receiver of ESP-NOW
  */
 
 #include <esp_now.h>
 #include <WiFi.h>
-#include <ESP32Servo.h>
 
-// #define SERVO_L D9
-// #define SERVO_R D10
+const int NUM_CONTROL_PARAMS = 13; // Number of parameters used for control
+const int CHANNEL = 1;
 
-// Servo servo1;
-// Servo servo2;
-
-// Structure example to receive data
-// Must match the sender structure
-typedef struct Control_Input
+typedef struct ControlInput
 {
-  float p1;
-  float p2;
-  float p3;
-  float p4;
-  float p5;
-  float p6;
-  float p7;
-  float p8;
-  float p9;
-  float p10;
-  float p11;
-  float p12;
-  float p13;
-} Control_Input;
+  float params[NUM_CONTROL_PARAMS];
+  int channel; // The channel to broadcast on
+} ControlInput;
 
-// Create a struct_message called myData
-Control_Input myData;
-
-// callback function that will be executed when data is received
-void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
+// Callback when data is received
+void OnDataRecv(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 {
-  memcpy(&myData, incomingData, sizeof(myData));
-  Serial.print("Bytes received: ");
-  Serial.println(len);
-  Serial.print("Data: ");
-  Serial.print(myData.p1);
-  Serial.print("|");
-  Serial.print(myData.p2);
-  Serial.print("|");
-  Serial.print(myData.p3);
-  Serial.print("|");
-  Serial.print(myData.p4);
-  Serial.print("|");
-  Serial.print(myData.p5);
-  Serial.print("|");
-  Serial.print(myData.p6);
-  Serial.print("|");
-  Serial.print(myData.p7);
-  Serial.print("|");
-  Serial.print(myData.p8);
-  Serial.print("|");
-  Serial.print(myData.p9);
-  Serial.print("|");
-  Serial.print(myData.p10);
-  Serial.print("|");
-  Serial.print(myData.p11);
-  Serial.print("|");
-  Serial.print(myData.p12);
-  Serial.print("|");
-  Serial.print(myData.p13);
-  Serial.println();
-
-  // servo1.write(myData.x);
-  // servo2.write(myData.x);
+  char macStr[18];
+  snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
+           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+  
+  ControlInput *incomingData = (ControlInput *)data; // Cast data to our structure type
+  
+  if (incomingData->channel == -1) // Check if the data is P2P
+  {
+    Serial.print("Packet from: ");
+    Serial.println(macStr);
+    Serial.print("Control params: ");
+    for (int i = 0; i < NUM_CONTROL_PARAMS; i++)
+    {
+      Serial.print(incomingData->params[i]);
+      if (i < NUM_CONTROL_PARAMS - 1)
+      {
+        Serial.print(", ");
+      }
+    }
+    Serial.println("\tListening from P2P");
+  }else if (incomingData->channel == CHANNEL){ // Check if the data is broadcast
+    Serial.print("Packet from: ");
+    Serial.println(macStr);
+    Serial.print("Control params: ");
+    for (int i = 0; i < NUM_CONTROL_PARAMS; i++)
+    {
+      Serial.print(incomingData->params[i]);
+      if (i < NUM_CONTROL_PARAMS - 1)
+      {
+        Serial.print(", ");
+      }
+    }
+    Serial.print("\tListening on channel: ");
+    Serial.println(incomingData->channel);
+  }
+  else
+  {
+    Serial.println("Data received on an unexpected channel. Ignoring.");
+  }
 }
 
 void setup()
 {
-  // Initialize Serial Monitor
   Serial.begin(115200);
-
-  // Initialize Servo
-  //  ESP32PWM::allocateTimer(0);
-  //  ESP32PWM::allocateTimer(1);
-  //  ESP32PWM::allocateTimer(2);
-  //  ESP32PWM::allocateTimer(3);
-  //  servo1.setPeriodHertz(50);// Standard 50hz servo
-  //  servo2.setPeriodHertz(50);// Standard 50hz servo
-  //  servo1.attach(SERVO_L, 600, 2400);
-  //  servo2.attach(SERVO_R, 600, 2400);
-
-  // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
+  Serial.print("ESP Board MAC Address:  ");
+  Serial.println(WiFi.macAddress());
 
-  // Init ESP-NOW
   if (esp_now_init() != ESP_OK)
   {
     Serial.println("Error initializing ESP-NOW");
     return;
+  }else{
+    Serial.println("ESP-NOW initialized");
   }
 
-  // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
+  // Register for a callback function that will be called when data is received
   esp_now_register_recv_cb(OnDataRecv);
 }
 
 void loop()
 {
+  // Nothing to do here since we just wait for the callback to be triggered
 }

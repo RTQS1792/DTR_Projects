@@ -2,12 +2,12 @@
 Author       : Hanqing Qi
 Date         : 2023-09-29 16:25:39
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-09-30 18:28:02
+LastEditTime : 2023-10-03 15:15:44
 FilePath     : /DTR_Projects/ESP_NOW/Multi_Mac_Address_V1/Main.py
 Description  : Main for testing ESP-NOW Communication
 """
 
-from Serial_Sender import ESPNOWControl
+from ESPNOW import ESPNOWControl
 import time
 
 PORT = "/dev/cu.wchusbserial1140"
@@ -17,9 +17,10 @@ LIST_OF_MAC_ADDRESS = [
     "b0:92:4c:a1:78:e3",
     "5f:13:87:d0:69:72",
     "4a:22:3b:e9:50:61",
+    "34:85:18:91:B5:B4"
 ]
-SLAVE_INDEX = 3
-BRODCAST_CHANNEL = 1
+SLAVE_INDEX = -1
+BRODCAST_CHANNEL = 3 # SLAVE_INDEX will override this value if it is not -1
 RANDOM_TEST_INPUT = [3.47, 8.92, 0.26, 4.58, 9.14, 7.60, 2.35, 6.84, 5.97, 1.23, 8.50, 0.78, 6.41]
 
 if __name__ == "__main__":
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     try:
         esp_now = ESPNOWControl(PORT, LIST_OF_MAC_ADDRESS)
         while True:
-            esp_now.send(RANDOM_TEST_INPUT, BRODCAST_CHANNEL, -1)
+            esp_now.send(RANDOM_TEST_INPUT, BRODCAST_CHANNEL, SLAVE_INDEX)
             time.sleep(0.1)
             RANDOM_TEST_INPUT = [x + 1 for x in RANDOM_TEST_INPUT]
         # for i in range(5):
