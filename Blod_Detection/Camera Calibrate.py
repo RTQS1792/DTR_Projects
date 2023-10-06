@@ -1,6 +1,11 @@
-# Hello World Example
-#
-# Welcome to the OpenMV IDE! Click on the green run arrow button below to run the script!
+"""
+Author       : Hanqing Qi
+Date         : 2023-10-06 16:17:30
+LastEditors  : Hanqing Qi
+LastEditTime : 2023-10-06 16:34:05
+FilePath     : /Blod_Detection/Camera Calibrate.py
+Description  : Sample code for camera calibration
+"""
 
 import sensor, image, time
 from pyb import LED
@@ -31,8 +36,6 @@ sensor.__write_reg(0xA9, 0b10000000)  # G gain odd 2
 sensor.__write_reg(0xAA, 0b10000000)  # G gain even 2
 
 sensor.__write_reg(0xFE, 0b00000010)  # change to registers at page 2
-# sensor.__write_reg(0xd0, 0b00000000) # change global saturation,
-# strangely constrained by auto saturation
 sensor.__write_reg(0xD1, 0b01110000)  # change Cb saturation
 sensor.__write_reg(0xD2, 0b01111000)  # change Cr saturation
 sensor.__write_reg(0xD3, 0b01000000)  # luma contrast
@@ -43,5 +46,5 @@ clock = time.clock()  # Tracks FPS.
 while True:
     clock.tick()  # Update the FPS clock.
     img = sensor.snapshot()  # Take a picture and return the image.
-    print(clock.fps())  # Note: OpenMV Cam runs about half as fast when connected
-    # to the IDE. The FPS should increase once disconnected.
+    print(clock.fps())  
+    # NOTE: OpenMV Cam runs about half as fast when connected to the IDE. The FPS should increase once disconnected.
