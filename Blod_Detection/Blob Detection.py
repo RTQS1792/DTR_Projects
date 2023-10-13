@@ -2,7 +2,7 @@
 Author       : Hanqing Qi
 Date         : 2023-10-06 16:55:08
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-10-12 15:39:17
+LastEditTime : 2023-10-12 18:59:35
 FilePath     : /Blod_Detection/Blob Detection.py
 Description  : Blob Detection Sample Code
 """
@@ -44,47 +44,27 @@ clock = time.clock()  # Tracks FPS.
 # Color Tracking Thresholds (L Min, L Max, A Min, A Max, B Min, B Max)
 # The below thresholds track in general red/green things. You may wish to tune them...
 thresholds = [
-    (0, 90, -70, 30, -20, 60),  # generic_green_thresholds
+    (30, 70, -50, 0, -0, 50),  # generic_green_thresholds
     # (0, 40, 0, 50, -100, 0),  # generic_blue_thresholds
 ]
 
 init_sensor_target()
 
-previous_blobs = []
-MIN_CONSISTENT_FRAMES = 1  # for example, adjust as needed
-
 while True:
     clock.tick()
     img = sensor.snapshot()
-
-    current_blobs = []
-
-    for blob in img.find_blobs(thresholds, pixels_threshold=200, area_threshold=200, merge=True):
-        # Check the aspect ratio
-        aspect_ratio = blob.w() / blob.h()
-        if 0.6 < aspect_ratio < 1.2:
-            consistent_frames = 1
-            for prev_blob_data in previous_blobs:
-                prev_blob = prev_blob_data['blob']
-                if abs(blob.cx() - prev_blob.cx()) < 20 and abs(blob.cy() - prev_blob.cy()) < 20:  # 10 pixels tolerance
-                    consistent_frames = prev_blob_data['consistent_frames'] + 1
-                    break
-
-            current_blobs.append({
-                'blob': blob,
-                'consistent_frames': consistent_frames
-            })
-
-    # Filter blobs based on consistent frames
-    for blob_data in current_blobs:
-        if blob_data['consistent_frames'] >= MIN_CONSISTENT_FRAMES:
-            # Draw the consistent blob
-            blob = blob_data['blob']
-            img.draw_rectangle(blob.rect())
-            img.draw_cross(blob.cx(), blob.cy())
-            img.draw_keypoints([(blob.cx(), blob.cy(), int(math.degrees(blob.rotation())))], size=20)
-
-    # Update the previous blobs list for the next frame
-    previous_blobs = current_blobs
+    
+    for blob in img.find_blobs(thresholds, pixels_threshold=1000, area_threshold=100, merge=True):
+        # Draw a rect around the blob.
+        img.draw_rectangle(blob.rect(), color=127) 
+        
+        # Draw a cross at the centroid of the blob.
+        img.draw_cross(blob.cx(), blob.cy(), color=127) 
+        
+        # Highlight individual pixels
+        for pixel in blob.pixels():
+            x, y = pixel
+            if some_condition(img.get_pixel(x, y)):  # Define some_condition based on your requirements
+                img.set_pixel(x, y, (255, 0, 0))  # Or use draw_circle as earlier to make it more visible
 
     print(clock.fps())
