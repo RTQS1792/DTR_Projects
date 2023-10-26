@@ -12,6 +12,7 @@ Servo servo1;
 Servo servo2;
 Servo thrust1;
 Servo thrust2;
+int SERVO_LOCK = 0; // Lock the servo at 90 degree for arm installation
 
 void setup() {
   // pinMode(LED_BLUE, OUTPUT); // Initialize the LED_BUILTIN pin as an output
@@ -26,8 +27,8 @@ void setup() {
   thrust1.setPeriodHertz(51);// Standard 50hz servo
   thrust2.setPeriodHertz(51);// Standard 50hz servo
 
-  servo1.attach(SERVO_L, 500, 2400);
-  servo2.attach(SERVO_R, 500, 2400);
+  servo1.attach(SERVO_L, 650, 2500); // 0043 Servos
+  servo2.attach(SERVO_R, 650, 2500); // 0043 Servos
 
   thrust1.attach(THRUST_L, 1000, 2000);
   thrust2.attach(THRUST_R, 1000, 2000);
@@ -64,12 +65,12 @@ void loop() {
         
         delay(20);
     }
-    delay(1000);
+    delay(2000);
 
-  // while(1){
-  //   servo1.write(90);
-  //   servo2.write(90);
-  // }
+    while(SERVO_LOCK){
+        servo1.write(90);
+        servo2.write(90);
+    }
 }
 
 
