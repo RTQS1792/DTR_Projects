@@ -2,7 +2,7 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-26 18:11:25
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-27 14:31:42
+ * @LastEditTime : 2023-10-27 14:43:43
  * @FilePath     : /Multi_Mac_Address_V2/espnowDataStruct.h
  * @Description  : The data structure to hold the information in espnow communication.
  */
@@ -28,3 +28,28 @@ typedef struct esp_now_data_struct {
 } esp_now_data_struct;
 
 #endif
+
+void printEspnowData(const esp_now_data_struct& data){
+    switch (data.flag) {}
+    {
+    case 0:
+        Serial.print("Control data: ");
+        break;
+    case 1:
+        Serial.print("BNP & baro feedback: ");
+        break;
+    case 2:
+        Serial.print("Nicla feedback: ");
+        break;
+    case 3:
+        Serial.print("Wall sensor feedback: ");
+        break;
+    default:
+        Serial.print("Unknown flag: ");
+        break;
+    }
+    for (int i = 0; i < data.paramCount; i++){
+        Serial.print(data.params[i]);
+        Serial.print(" ");
+    }
+}
