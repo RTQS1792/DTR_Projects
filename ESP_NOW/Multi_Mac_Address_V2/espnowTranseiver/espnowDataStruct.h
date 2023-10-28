@@ -2,8 +2,8 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-26 18:11:25
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-28 15:06:26
- * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowRobot/espnowDataStruct.h
+ * @LastEditTime : 2023-10-28 16:23:16
+ * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowSensor/espnowDataStruct.h
  * @Description  : The data structure to hold the information in espnow
  * communication.
  */
@@ -15,17 +15,18 @@
 
 #define MAX_PARAMS 16
 
-typedef struct esp_now_data_struct {
-  int paramCount;         // This int indicates the number of parameters in use
+typedef struct esp_now_data_struct
+{
+  int paramCount;           // This int indicates the number of parameters in use
   float params[MAX_PARAMS]; // Array to hold 16 int parameters
-  int flag; // Flag that indicates which type of data is being sent
-            /*
-             * NOTE: Below is the list of flags and their corresponding data types
-             * 0: regular control data
-             * 1: BNP & barometer feedback
-             * 2: nicla feedback
-             * 3: wall sensor feedback
-             */
+  int flag;                 // Flag that indicates which type of data is being sent
+                            /*
+                             * NOTE: Below is the list of flags and their corresponding data types
+                             * 0: regular control data
+                             * 1: BNP & barometer feedback
+                             * 2: nicla feedback
+                             * 3: wall sensor feedback
+                             */
 } esp_now_data_struct;
 
 #endif
@@ -35,9 +36,11 @@ typedef struct esp_now_data_struct {
  * @param {esp_now_data_struct} data
  * @return {*} None
  */
-void printEspnowData(const esp_now_data_struct &data) {
+void printEspnowData(const esp_now_data_struct &data)
+{
   // Prints the flag of the data.
-  switch (data.flag) {
+  switch (data.flag)
+  {
   case 0:
     Serial.print("Control data: ");
     break;
@@ -55,7 +58,8 @@ void printEspnowData(const esp_now_data_struct &data) {
     break;
   }
   // Print all parameters in the data.
-  for (int i = 0; i < data.paramCount; i++) {
+  for (int i = 0; i < data.paramCount; i++)
+  {
     Serial.print(data.params[i]);
     Serial.print(" ");
   }

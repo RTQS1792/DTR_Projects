@@ -67,16 +67,18 @@ class ESPNOWControl:
             raw_message = 'M|' + DELIMITER.join(mac_addresses)
             message = self._pack_message(raw_message)
             self.serial.write(message)
-            # TODO: Implement feedback from the ESP32
             try:
-                incoming = self.serial.readline().decode(errors="ignore").strip()
-                print(incoming)
-                if incoming == ("Received MAC addresses: " + str(len(mac_addresses))):
-                    print("MAC addresses sent successfully!")
-                    break
+                while True:
+                    incoming = self.serial.readline().decode(errors="ignore").strip()
+                    print(incoming)
+                    if incoming == ("Received MAC addresses: " + str(len(mac_addresses))):
+                        print("MAC addresses sent successfully!")
+                        return
+                    elif incoming.count(':') != 5: # Serial not printing one of the mac addresses
+                        break # Send the data again
             except UnicodeDecodeError:
                 print("Received malformed data!")
-            time.sleep(0.5)
+            time.sleep(1)
 
     def send(self, control_params: list, channel: int = 0, slave_index: int = -1) -> None:
         raw_massage = control_params.copy()
@@ -93,7 +95,7 @@ class ESPNOWControl:
         self.serial.write(message)
         try:
             incoming = self.serial.readline().decode(errors="ignore").strip()
-            print("Sending " + incoming)
+            print(incoming)
         except UnicodeDecodeError:
             print("Received malformed data!")
             
