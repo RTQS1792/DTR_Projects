@@ -2,8 +2,8 @@
 Author       : Hanqing Qi
 Date         : 2023-09-29 16:25:39
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-10-03 15:15:44
-FilePath     : /DTR_Projects/ESP_NOW/Multi_Mac_Address_V1/Main.py
+LastEditTime : 2023-10-28 14:47:51
+FilePath     : /ESP_NOW/Multi_Mac_Address_V2/Main.py
 Description  : Main for testing ESP-NOW Communication
 """
 
@@ -27,16 +27,16 @@ if __name__ == "__main__":
     # Initialize the serial connection
     try:
         esp_now = ESPNOWControl(PORT, LIST_OF_MAC_ADDRESS)
-        while True:
-            esp_now.send(RANDOM_TEST_INPUT, BRODCAST_CHANNEL, SLAVE_INDEX)
-            time.sleep(0.1)
-            RANDOM_TEST_INPUT = [x + 1 for x in RANDOM_TEST_INPUT]
+        # while True:
+        #     esp_now.send(RANDOM_TEST_INPUT, BRODCAST_CHANNEL, SLAVE_INDEX)
+        #     time.sleep(0.1)
+        #     RANDOM_TEST_INPUT = [x + 1 for x in RANDOM_TEST_INPUT]
         # for i in range(5):
         #     for j in range(5):
         #         esp_now.send(RANDOM_TEST_INPUT, BRODCAST_CHANNEL, j)
         #         time.sleep(0.1)
         #     RANDOM_TEST_INPUT = [x + 1 for x in RANDOM_TEST_INPUT]
-        esp_now.close()
+        # esp_now.close()
     except KeyboardInterrupt:
         esp_now.close()
         print("Program terminated by user")

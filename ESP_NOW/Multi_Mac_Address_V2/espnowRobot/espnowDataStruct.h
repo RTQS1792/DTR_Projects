@@ -2,8 +2,8 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-26 18:11:25
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-28 15:06:20
- * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowSensor/espnowDataStruct.h
+ * @LastEditTime : 2023-10-28 15:06:26
+ * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowRobot/espnowDataStruct.h
  * @Description  : The data structure to hold the information in espnow
  * communication.
  */
