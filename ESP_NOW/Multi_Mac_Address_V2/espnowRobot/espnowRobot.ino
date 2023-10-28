@@ -2,7 +2,7 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-28 14:31:55
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-28 15:28:15
+ * @LastEditTime : 2023-10-28 15:38:48
  * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowRobot/espnowRobot.ino
  * @Description  : 
  */
@@ -15,6 +15,7 @@
 #define EOM 0x03  // End of message
 #define MAX_MESSAGE_LENGTH 256  // Assuming a maximum message length
 #define MAX_RECEIVERS 20  // Maximum number of receiver addresses
+#define SERIAL_TIMEOUT 1000  // Timeout for serial communication in milliseconds
 
 uint8_t macAddresses[MAX_RECEIVERS][6] = {}; // The MAC addresses of the receivers
 uint8_t nullAddress[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -43,7 +44,12 @@ void readSerialMessage() {
       String messageBody = "";
       byte checksum = 0;
       for (int i = 0; i < msgLength; i++) {
-        while(Serial.available() == 0);  // Wait for next character
+        unsigned long startTime = millis();
+        while(Serial.available() == 0 && millis() - startTime < SERIAL_TIMEOUT);  // Wait for next character
+        if (millis() - startTime >= SERIAL_TIMEOUT) {
+          Serial.println("Timeout waiting for data on serial port");
+          return;  // Exit function if timeout
+        }
         char c = Serial.read();
         messageBody += c;
         checksum ^= c;  // Calculate checksum
@@ -96,8 +102,9 @@ void processMacAddresses(String macList) {
     if (startPos < macList.length() && addressIndex < MAX_RECEIVERS) {
         String macStr = macList.substring(startPos);
         convertMacStrToBytes(macStr, macAddresses[addressIndex]);
+        addressIndex++;
     }
-    Serial.println("Received MAC addresses: " + String(addressIndex + 1));
+    Serial.println("Received MAC addresses: " + String(addressIndex));
 }
 
 /**
