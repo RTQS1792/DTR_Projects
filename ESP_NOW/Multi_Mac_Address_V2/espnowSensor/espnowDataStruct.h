@@ -2,8 +2,8 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-26 18:11:25
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-27 15:56:57
- * @FilePath     : /Multi_Mac_Address_V2/espnowSensor/espnowDataStruct.h
+ * @LastEditTime : 2023-10-28 13:51:21
+ * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowSensor/espnowDataStruct.h
  * @Description  : The data structure to hold the information in espnow
  * communication.
  */
@@ -32,7 +32,7 @@ typedef struct esp_now_data_struct {
 
 /**
  * @description: Print the data in the espnowDataStruct.
- * @param {esp_now_data_struct} data: The data to be printed.
+ * @param {esp_now_data_struct} data
  * @return {*} None
  */
 void printEspnowData(const esp_now_data_struct &data) {

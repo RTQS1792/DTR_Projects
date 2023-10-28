@@ -2,9 +2,9 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-26 18:32:19
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-27 15:23:48
- * @FilePath     : /Multi_Mac_Address_V2/espnowSensor/espnowSensor.ino
- * @Description  :
+ * @LastEditTime : 2023-10-28 13:54:03
+ * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowSensor/espnowSensor.ino
+ * @Description  : The ESP-NOW code for the sensor esp32.
  */
 
 #include <Arduino.h>
@@ -15,7 +15,7 @@
 
 uint8_t robotAddress[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // MAC address of the receiver
 esp_now_data_struct dataToSend;                                // Create a struct to hold the data you will send
-esp_now_peer_info_t peerInfo;
+esp_now_peer_info_t peerInfo;                                  // Create a struct to hold the peer information
 
 void setup()
 {
@@ -51,6 +51,12 @@ void loop()
     esp_now_send(robotAddress, (uint8_t *)&data, sizeof(data));
 }
 
+/**
+ * @description: Callback function for when data is sent.
+ * @param       {uint8_t} *mac_addr: The MAC address of the robot
+ * @param       {esp_now_send_status_t} status: The status of the data sent
+ * @return      {*} None
+ */
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     printEspnowData(dataToSend); // Print the data that was sent
