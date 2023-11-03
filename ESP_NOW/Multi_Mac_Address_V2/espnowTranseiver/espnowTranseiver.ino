@@ -2,8 +2,8 @@
  * @Author       : Hanqing Qi
  * @Date         : 2023-10-28 14:31:55
  * @LastEditors  : Hanqing Qi
- * @LastEditTime : 2023-10-28 17:15:33
- * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowRobot/espnowRobot.ino
+ * @LastEditTime : 2023-10-28 19:52:09
+ * @FilePath     : /ESP_NOW/Multi_Mac_Address_V2/espnowTranseiver/espnowTranseiver.ino
  * @Description  :
  */
 
@@ -21,6 +21,9 @@ uint8_t macAddresses[MAX_RECEIVERS][6] = {}; // The MAC addresses of the receive
 uint8_t nullAddress[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 uint8_t brodcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 int numOfAddresses = 0; // Number of addresses received
+int slaveIndex = 0;
+int brodcastChannel = -1;
+bool completePackage = false; // If the serial port has received a complete package to send
 
 esp_now_data_struct dataToSend; // Create a struct to hold the data you will send
 esp_now_data_struct dataReceived;
@@ -32,20 +35,21 @@ void setup()
     WiFi.mode(WIFI_STA);  // Set WiFi mode to station
     Serial.print("ESP Sensor MAC Address:  ");
     Serial.println(WiFi.macAddress());
-    if (esp_now_init() != ESP_OK)
-    {
-        Serial.println("Error initializing ESP-NOW");
-        return;
-    }
-    esp_now_register_send_cb(onDataSent);
-    esp_now_register_recv_cb(onDataRecv);
 }
 
 void loop()
 {
     readSerialMessage(); // Call function to read serial message
+    if (completePackage)
+    {
+        sendControlData();
+    }
 }
 
+/**
+ * @description: Initialize the ESP-NOW peers
+ * @return      {*} None
+ */
 void initializeESPNowPeers()
 {
     esp_now_deinit();
@@ -55,6 +59,8 @@ void initializeESPNowPeers()
         Serial.println("Error initializing ESP-NOW");
         return;
     }
+    esp_now_register_send_cb(onDataSent);
+    esp_now_register_recv_cb(onDataRecv);
     for (int i = 0; i < numOfAddresses; i++)
     {
         memcpy(peerInfo.peer_addr, macAddresses[i], 6);
@@ -70,13 +76,17 @@ void initializeESPNowPeers()
     }
 }
 
+/**
+ * @description: Read a message from the serial port
+ * @return      {*} None
+ */
 void readSerialMessage()
 {
     if (Serial.available() > 0)
     {
         byte startMarker = Serial.read();
-        if (startMarker == SOM)
-        {                                   // If the message starts with SOM
+        if (startMarker == SOM) // If the message starts with SOM
+        {
             byte msgLength = Serial.read(); // Read message length
             if (msgLength > MAX_MESSAGE_LENGTH || msgLength <= 0)
             {
@@ -88,8 +98,7 @@ void readSerialMessage()
             for (int i = 0; i < msgLength; i++)
             {
                 unsigned long startTime = millis();
-                while (Serial.available() == 0 && millis() - startTime < SERIAL_TIMEOUT)
-                    ; // Wait for next character
+                while (Serial.available() == 0 && millis() - startTime < SERIAL_TIMEOUT){}; // Wait for next character
                 if (millis() - startTime >= SERIAL_TIMEOUT)
                 {
                     Serial.println("Timeout waiting for data on serial port");
@@ -141,6 +150,10 @@ void processMessage(String message)
  */
 void processMacAddresses(String macList)
 {
+    // Reset the macAddresses array and the dataToSend struct
+    memset(macAddresses, 0, sizeof(macAddresses));
+    memset(&dataToSend, 0, sizeof(dataToSend));
+
     int addressIndex = 0;         // Index to keep track of where to store the next address
     int startPos = 0, endPos = 0; // Positions to help in substring operation
 
@@ -242,14 +255,38 @@ void processControlParameters(String controlParams)
     tempData.flag = 0;                    // Set the flag to indicate that this is a control message
 
     dataToSend = tempData; // Update dataToSend with the new valid data
+    completePackage = true;
     Serial.print("Sent ");
     printEspnowData(dataToSend);
-    Serial.println("");
 }
 
 void onDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
-    Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery success" : "Delivery fail");
+    Serial.println(status == ESP_NOW_SEND_SUCCESS ? " S " : " F111 ");
+}
+
+void sendControlData()
+{
+    if (dataToSend.paramCount > 0 && dataToSend.flag == 0)
+    { // If there is control data to send
+        Serial.print("Still sending");
+        esp_err_t result;
+        slaveIndex = dataToSend.params[dataToSend.paramCount - 1];
+        brodcastChannel = dataToSend.params[dataToSend.paramCount - 2];
+        if (slaveIndex < numOfAddresses && slaveIndex >= 0)
+        {
+            result = esp_now_send(macAddresses[slaveIndex], (uint8_t *)&dataToSend, sizeof(dataToSend));
+        }
+        else if (slaveIndex == -1)
+        {
+            result = esp_now_send(brodcastAddress, (uint8_t *)&dataToSend, sizeof(dataToSend));
+        }
+        else
+        {
+            Serial.println("Receiver index out of range");
+        }
+        completePackage = false;
+    }
 }
 
 void onDataRecv(const uint8_t *mac_addr, const uint8_t *data, int len)

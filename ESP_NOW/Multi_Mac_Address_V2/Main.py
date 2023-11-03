@@ -2,7 +2,7 @@
 Author       : Hanqing Qi
 Date         : 2023-09-29 16:25:39
 LastEditors  : Hanqing Qi
-LastEditTime : 2023-10-28 16:07:16
+LastEditTime : 2023-10-28 18:14:20
 FilePath     : /ESP_NOW/Multi_Mac_Address_V2/Main.py
 Description  : Main for testing ESP-NOW Communication
 """
@@ -19,8 +19,8 @@ LIST_OF_MAC_ADDRESS = [
     "4a:22:3b:e9:50:61",
     "34:85:18:91:B5:B4"
 ]
-SLAVE_INDEX = -1
-BRODCAST_CHANNEL = 3 # SLAVE_INDEX will override this value if it is not -1
+SLAVE_INDEX = 1
+BRODCAST_CHANNEL = 0 # SLAVE_INDEX will override this value if it is not -1
 RANDOM_TEST_INPUT = [3.47, 8.92, 0.26, 4.58, 9.14, 7.60, 2.35, 6.84, 5.97, 1.23, 8.50, 0.78, 6.41, 1.11]
 
 if __name__ == "__main__":
